@@ -1,0 +1,27 @@
+[gd_scene load_steps=7 format=3 uid="uid://ctq53hs60mtf5"]
+
+[ext_resource type="Script" uid="uid://c2ev3kp0q8wn7" path="res://entities/pellets/pellet.gd" id="1_un84u"]
+[ext_resource type="Script" uid="uid://cinn5yixd7nw6" path="res://common/collect/collectable_2d.gd" id="2_un84u"]
+[ext_resource type="AudioStream" uid="uid://ca82cps1y4bfg" path="res://entities/pellets/audio/chomp_1.wav" id="3_v5r2c"]
+[ext_resource type="AudioStream" uid="uid://bl8axd53ccw8n" path="res://entities/pellets/audio/chomp_2.wav" id="4_gipa5"]
+[ext_resource type="Texture2D" uid="uid://db4omi7en4l18" path="res://entities/pellets/pellets.png" id="5_v5r2c"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7rxqt"]
+size = Vector2(2, 2)
+
+[node name="Pellet" type="Node2D"]
+script = ExtResource("1_un84u")
+
+[node name="Collectable2D" type="Area2D" parent="."]
+script = ExtResource("2_un84u")
+audio_streams = Array[AudioStream]([ExtResource("3_v5r2c"), ExtResource("4_gipa5")])
+identifier = "pellet"
+metadata/_custom_type_script = "uid://cinn5yixd7nw6"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Collectable2D"]
+shape = SubResource("RectangleShape2D_7rxqt")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("5_v5r2c")
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)

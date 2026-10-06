@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3 uid="uid://r8jmwj18bytq"]
+
+[ext_resource type="Script" uid="uid://c6svyip0yuirv" path="res://entities/pellets/power_pellet/power_pellet.gd" id="1_esh57"]
+[ext_resource type="Texture2D" uid="uid://db4omi7en4l18" path="res://entities/pellets/pellets.png" id="2_7byyk"]
+[ext_resource type="Script" uid="uid://cinn5yixd7nw6" path="res://common/collect/collectable_2d.gd" id="3_stync"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6220u"]
+atlas = ExtResource("2_7byyk")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7ks6m"]
+atlas = ExtResource("2_7byyk")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jjnmo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6220u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7ks6m")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_udipn"]
+radius = 2.23607
+
+[node name="PowerPellet" type="Node2D"]
+script = ExtResource("1_esh57")
+points = 50
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_jjnmo")
+autoplay = "default"
+frame_progress = 0.410319
+
+[node name="Collectable2D" type="Area2D" parent="."]
+script = ExtResource("3_stync")
+identifier = "power_pellet"
+metadata/_custom_type_script = "uid://cinn5yixd7nw6"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Collectable2D"]
+shape = SubResource("CircleShape2D_udipn")

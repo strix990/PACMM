@@ -1,0 +1,164 @@
+[gd_scene load_steps=6 format=3 uid="uid://b6xioh2e6t3du"]
+
+[ext_resource type="Theme" uid="uid://7iwb4w13baxm" path="res://config/theme/default_theme.tres" id="1_norf8"]
+[ext_resource type="Script" uid="uid://c1muhmw4wcwei" path="res://ui/game/ui_game.gd" id="2_perei"]
+[ext_resource type="Texture2D" uid="uid://ut6d4b4sq4en" path="res://entities/pacman/pacman.png" id="3_perei"]
+[ext_resource type="AudioStream" uid="uid://o8iuo24t1q6q" path="res://ui/game/audio/so-happy-with-my-8-bit-game/so-happy-with-my-8-bit-game-301275_intro.wav" id="4_perei"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_no1gd"]
+atlas = ExtResource("3_perei")
+region = Rect2(0, 0, 16, 16)
+
+[node name="UIGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_norf8")
+script = ExtResource("2_perei")
+metadata/_custom_type_script = "uid://c1muhmw4wcwei"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="hboxcontainer_top" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_vertical = 2
+
+[node name="margincontainer_score" type="MarginContainer" parent="VBoxContainer/hboxcontainer_top"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/hboxcontainer_top/margincontainer_score"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_score/VBoxContainer"]
+layout_mode = 2
+text = "SCORE"
+uppercase = true
+
+[node name="label_score" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_score/VBoxContainer"]
+layout_mode = 2
+text = "00"
+uppercase = true
+
+[node name="margincontainer_level" type="MarginContainer" parent="VBoxContainer/hboxcontainer_top"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/hboxcontainer_top/margincontainer_level"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_level/VBoxContainer"]
+layout_mode = 2
+text = "LEVEL"
+horizontal_alignment = 2
+uppercase = true
+
+[node name="label_level" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_level/VBoxContainer"]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 1
+
+[node name="margincontainer_highscore" type="MarginContainer" parent="VBoxContainer/hboxcontainer_top"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/hboxcontainer_top/margincontainer_highscore"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_highscore/VBoxContainer"]
+layout_mode = 2
+text = "HIGHSCORE"
+horizontal_alignment = 2
+uppercase = true
+
+[node name="label_highscore" type="Label" parent="VBoxContainer/hboxcontainer_top/margincontainer_highscore/VBoxContainer"]
+layout_mode = 2
+text = "00"
+horizontal_alignment = 2
+
+[node name="button_start" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "START NEW GAME"
+
+[node name="hboxcontainer_bottom" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_vertical = 10
+
+[node name="margincontainer_lives" type="MarginContainer" parent="VBoxContainer/hboxcontainer_bottom"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives"]
+layout_mode = 2
+
+[node name="texturerect_life_1" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_2" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_3" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_4" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+visible = false
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_5" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+visible = false
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_6" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+visible = false
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_7" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+visible = false
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="texturerect_life_8" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer"]
+visible = false
+layout_mode = 2
+texture = SubResource("AtlasTexture_no1gd")
+flip_h = true
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_perei")
