@@ -2,6 +2,12 @@ class_name Pacman extends GridTraveller
 
 @export var audio_stream_death_1: AudioStream
 @export var audio_stream_death_2: AudioStream
+## 1 or 2. Player 2 only plays in co-op and uses the arrow keys.
+@export var player: int = 1
+@export var tint: Color = Color.WHITE
+## Start position/direction in co-op (Vector2.ZERO / Vector2i.ZERO = same as single player).
+@export var coop_spawn_point: Vector2 = Vector2.ZERO
+@export var coop_tile_direction_reset: Vector2i = Vector2i.ZERO
 
 @onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
@@ -25,6 +31,8 @@ var look_direction: Vector2i = Vector2.ZERO:
 		else:
 			animated_sprite_2d.play(input_direction_map.find_key(ld))
 var skip_next_frame: bool = false
+## True while this Pac-Man plays its death (in co-op the other one just disappears).
+var dying: bool = false
 func _process(delta: float) -> void:
 	if GM.mode != GM.Mode.PLAYING:
 		return
@@ -44,6 +52,9 @@ func _process(delta: float) -> void:
 		animated_sprite_2d.play()
 
 func _ready() -> void:
+	add_to_group('pacmen')
+	animated_sprite_2d.self_modulate = tint
+	set_active(is_active())
 	collectable_2d.collected.connect(on_collectable_collected)
 	collector_2d.collected.connect(on_collector_collected)
 	# keep the eat-ghost sound playing during the eaten-ghost freeze (tree paused)
@@ -52,10 +63,25 @@ func _ready() -> void:
 	GM.reset.connect(on_reset)
 
 func get_input() -> void:
-	for direction in input_direction_map:
-		if Input.is_action_pressed(direction):
-			tile_direction = input_direction_map[direction]
-			look_direction = tile_direction
+	for direction in read_input_directions(get_input_prefixes()):
+		tile_direction = direction
+		look_direction = tile_direction
+
+func get_input_prefixes() -> Array[String]:
+	if player == 2:
+		return ['p2_']
+	# alone, Pac-Man can be steered with both WASD and the arrow keys
+	if GM.game_type == GM.GameType.SINGLE:
+		return ['p1_', 'p2_']
+	return ['p1_']
+
+func is_active() -> bool:
+	return player == 1 or GM.game_type == GM.GameType.COOP
+
+## An inactive Pac-Man is hidden and disabled, which also takes its collision areas out of the game.
+func set_active(active: bool) -> void:
+	visible = active
+	process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 
 func get_speed() -> float:
 	match GM.level:
@@ -75,6 +101,10 @@ func get_speed() -> float:
 			return speed * 0.9
 
 func on_collectable_collected() -> void:
+	# in co-op, if both Pac-Men are caught at once only one life is lost
+	if GM.mode != GM.Mode.PLAYING:
+		return
+	dying = true
 	GM.mode = GM.Mode.DEATH
 	animated_sprite_2d.pause()
 	await get_tree().create_timer(1.0).timeout
@@ -100,10 +130,18 @@ func on_game_mode_changed(mode: GM.Mode) -> void:
 	match mode:
 		GM.Mode.PLAYING:
 			look_direction = tile_direction
-			
+		GM.Mode.DEATH:
+			# the other Pac-Man disappears like the ghosts while this one plays its death
+			if !dying:
+				await get_tree().create_timer(1.0).timeout
+				if GM.mode == GM.Mode.DEATH:
+					visible = false
 
 func on_reset(_type: GM.ResetType) -> void:
-	global_position = spawn_point
+	dying = false
+	var coop: bool = GM.game_type == GM.GameType.COOP
+	global_position = coop_spawn_point if coop and coop_spawn_point != Vector2.ZERO else spawn_point
 	tile = grid.get_tile_from_coords(global_position)
-	tile_direction = tile_direction_reset
+	tile_direction = coop_tile_direction_reset if coop and coop_tile_direction_reset != Vector2i.ZERO else tile_direction_reset
 	look_direction = tile_direction
+	set_active(is_active())

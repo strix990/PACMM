@@ -24,10 +24,12 @@ class_name GridTraveller extends Node2D
 		tile_direction = td
 		tile_direction_changed.emit(td)
 		
-		if tile.x + td.x == grid.tiles_x + 2:
+		# tunnel wrap: tiles -2 and tiles_x + 2 are the same spot, so stepping past either edge
+		# (also when turning around right after a wrap) continues from the other side
+		if tile.x + td.x >= grid.tiles_x + 2:
 			tile.x = -2
 			global_position = grid.get_coords_from_tile(tile)
-		elif tile.x + td.x == -2:
+		elif tile.x + td.x <= -2:
 			tile.x = grid.tiles_x + 2
 			global_position = grid.get_coords_from_tile(tile)
 		
@@ -35,6 +37,23 @@ class_name GridTraveller extends Node2D
 @onready var tile_direction_next: Vector2i = tile_direction
 
 signal tile_direction_changed(tile_direction: Vector2i)
+
+const INPUT_DIRECTIONS: Dictionary[String, Vector2i] = {
+	'up': Vector2i.UP,
+	'left': Vector2i.LEFT,
+	'down': Vector2i.DOWN,
+	'right': Vector2i.RIGHT,
+}
+
+## Returns the directions currently held for the given input action prefixes
+## (e.g. ['p1_', 'p2_'] reads p1_up, p1_left, ..., p2_right).
+static func read_input_directions(prefixes: Array[String]) -> Array[Vector2i]:
+	var directions: Array[Vector2i] = []
+	for prefix in prefixes:
+		for action in INPUT_DIRECTIONS:
+			if Input.is_action_pressed(prefix + action):
+				directions.append(INPUT_DIRECTIONS[action])
+	return directions
 
 func _process(_delta: float) -> void:
 	tile = grid.get_tile_from_coords(global_position)

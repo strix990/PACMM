@@ -36,6 +36,8 @@ static var freeze_count: int = 0
 		house_state_reset = hsr
 @export var house_waiting_point: Vector2 = Vector2(112, 140)
 @export var pacman: Pacman
+## Only this ghost plays in versus mode, steered by player 2 with the arrow keys.
+@export var can_be_player_controlled: bool = false
 @export var spawn_point: Vector2 = Vector2.ZERO
 @export var tile_target_scatter: Vector2i = Vector2i.ZERO
 
@@ -60,7 +62,7 @@ var frighten: bool = false:
 		if !eaten:
 			collector_2d.disabled = f
 		points = POINTS_DEFAULT
-		if f:
+		if f and !player_controlled:
 			tile_direction = -tile_direction
 		animatedsprite_2d_frightened.play('left')
 var house_state: HouseState = house_state_reset:
@@ -103,15 +105,21 @@ var eaten: bool = false:
 		animatedsprite_2d_default.visible = !t
 		animatedsprite_2d_eaten.visible = t
 		if t:
+			# a player ghost may be standing still: pick the eyes' way home right away instead of
+			# waiting for the next tile (which never comes when not moving)
+			tile_direction_next = calculate_tile_direction_next()
 			freeze_and_show_points(points_earned)
 var in_tunnel: bool = false
 var mode: GM.GhostMode = GM.ghost_mode:
 	set(m):
 		if !GM.GhostMode.values().has(m) or m == mode:
 			return
-		tile_direction = -tile_direction
+		if !player_controlled:
+			tile_direction = -tile_direction
 		mode = m
 var points: int = POINTS_DEFAULT
+## Steered by player 2 instead of the AI (versus mode).
+var player_controlled: bool = false
 var tile_target: Vector2i = Vector2i.ZERO:
 	set(tt):
 		if tt == tile_target:
@@ -125,6 +133,10 @@ func _process(delta: float) -> void:
 		return
 	
 	super(delta)
+	
+	if player_controlled and !eaten and house_state == HouseState.NONE:
+		for direction in read_input_directions(['p2_']):
+			tile_direction = direction
 	
 	if house_state != HouseState.NONE:
 		if house_target_point == Vector2.ZERO:
@@ -160,6 +172,9 @@ func _ready() -> void:
 	on_tile_direction_changed(tile_direction)
 
 func calculate_tile_direction_next() -> Vector2i:
+	# the player ghost keeps going straight until steered (eaten eyes still find home by themselves)
+	if player_controlled and !eaten:
+		return super()
 	if frighten:
 		return get_tile_direction_while_frightened()
 	if eaten:
@@ -264,6 +279,19 @@ func get_tile_direction_while_frightened() -> Vector2i:
 func get_tile_target_during_chase() -> Vector2i:
 	return tile_target_scatter
 
+## The Pac-Man this ghost chases: the nearest one still in play (co-op has two).
+func get_target_pacman() -> Pacman:
+	var target: Pacman = pacman
+	for p: Pacman in get_tree().get_nodes_in_group('pacmen'):
+		if !p.is_active():
+			continue
+		if target == null or !target.is_active() or global_position.distance_to(p.global_position) < global_position.distance_to(target.global_position):
+			target = p
+	return target
+
+func is_active() -> bool:
+	return GM.game_type != GM.GameType.VERSUS or can_be_player_controlled
+
 ## Like the arcade: freeze the game for a moment and show the points earned for eating this
 ## ghost where it was caught, with Pac-Man and the eaten ghost hidden meanwhile.
 func freeze_and_show_points(amount: int) -> void:
@@ -279,7 +307,8 @@ func freeze_and_show_points(amount: int) -> void:
 
 	freeze_count += 1
 	get_tree().paused = true
-	pacman.visible = false
+	for p: Pacman in get_tree().get_nodes_in_group('pacmen'):
+		p.visible = false
 	animatedsprite_2d_eaten.visible = false
 	# scene tree timers keep running while the tree is paused
 	await get_tree().create_timer(POINTS_LABEL_TIME).timeout
@@ -288,7 +317,8 @@ func freeze_and_show_points(amount: int) -> void:
 	freeze_count -= 1
 	if freeze_count == 0:
 		get_tree().paused = false
-		pacman.visible = true
+		for p: Pacman in get_tree().get_nodes_in_group('pacmen'):
+			p.visible = p.is_active()
 
 func on_collected() -> void:
 	eaten = true
@@ -338,8 +368,10 @@ func on_tunnel_trigger_area_exited(area: Area2D) -> void:
 		in_tunnel = false
 
 func on_reset(_type: GM.ResetType) -> void:
-	visible = true
-	process_mode = Node.PROCESS_MODE_INHERIT
+	player_controlled = can_be_player_controlled and GM.game_type == GM.GameType.VERSUS
+	# in versus the AI ghosts sit the match out (hidden, disabled, no collisions)
+	visible = is_active()
+	process_mode = Node.PROCESS_MODE_INHERIT if is_active() else Node.PROCESS_MODE_DISABLED
 	frighten = false
 	eaten = false
 	global_position = spawn_point

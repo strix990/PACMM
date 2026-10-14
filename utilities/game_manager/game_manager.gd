@@ -20,6 +20,18 @@ enum ResetType {
 	LEVEL,
 	LIFE,
 }
+enum GameType {
+	SINGLE,
+	## two Pac-Men against the AI ghosts, sharing score and lives
+	COOP,
+	## Pac-Man against a single player-controlled ghost
+	VERSUS,
+}
+
+## Set by the menu before a new game starts.
+var game_type: GameType = GameType.SINGLE
+## Who won the last versus game: 'pacman' or 'ghost' (empty otherwise).
+var winner: String = ''
 
 var pellets_eaten: int = 0:
 	set(mc):
@@ -27,6 +39,10 @@ var pellets_eaten: int = 0:
 			return
 		pellets_eaten = mc
 		if mc == 244:
+			if game_type == GameType.VERSUS:
+				winner = 'pacman'
+				mode = Mode.OVER
+				return
 			GM.mode = GM.Mode.CLEAR
 			await get_tree().create_timer(1.0).timeout
 			level += 1
@@ -74,6 +90,8 @@ var lives: int = 3:
 			await get_tree().create_timer(1.0).timeout
 			mode = Mode.PLAYING
 		else:
+			if game_type == GameType.VERSUS:
+				winner = 'ghost'
 			mode = Mode.OVER
 var mode: Mode = Mode.NONE:
 	set(m):
@@ -123,6 +141,7 @@ func on_reset(type: ResetType) -> void:
 	mode = Mode.NONE
 	power_pellets_eaten = 0
 	if type == ResetType.GAME:
+		winner = ''
 		level = 1
 		lives = 3
 		SS.stats.score = 0
