@@ -9,6 +9,14 @@
 atlas = ExtResource("3_perei")
 region = Rect2(0, 0, 16, 16)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_itemslot"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+
 [node name="UIGame" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -177,6 +185,56 @@ visible = false
 layout_mode = 2
 texture = SubResource("AtlasTexture_no1gd")
 flip_h = true
+
+[node name="margincontainer_items" type="MarginContainer" parent="VBoxContainer/hboxcontainer_bottom"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/margin_right = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="hboxcontainer_item_p1" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1"]
+layout_mode = 2
+text = "1P"
+
+[node name="panel_item_p1" type="Panel" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_itemslot")
+
+[node name="texturerect_item_p1" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1/panel_item_p1"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 17.0
+offset_bottom = 17.0
+
+[node name="hboxcontainer_item_p2" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2"]
+layout_mode = 2
+text = "2P"
+
+[node name="panel_item_p2" type="Panel" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_itemslot")
+
+[node name="texturerect_item_p2" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2/panel_item_p2"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 17.0
+offset_bottom = 17.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_perei")

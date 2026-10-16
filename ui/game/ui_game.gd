@@ -6,6 +6,9 @@ class_name UIGame extends Control
 @onready var button_single: Button = $VBoxContainer/vboxcontainer_menu/button_single
 @onready var button_coop: Button = $VBoxContainer/vboxcontainer_menu/button_coop
 @onready var button_versus: Button = $VBoxContainer/vboxcontainer_menu/button_versus
+@onready var hboxcontainer_item_p2: HBoxContainer = $VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2
+@onready var texturerect_item_p1: TextureRect = $VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1/panel_item_p1/texturerect_item_p1
+@onready var texturerect_item_p2: TextureRect = $VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2/panel_item_p2/texturerect_item_p2
 @onready var label_highscore: Label = $VBoxContainer/hboxcontainer_top/margincontainer_highscore/VBoxContainer/label_highscore
 @onready var label_level: Label = $VBoxContainer/hboxcontainer_top/margincontainer_level/VBoxContainer/label_level
 @onready var label_score: Label = $VBoxContainer/hboxcontainer_top/margincontainer_score/VBoxContainer/label_score
@@ -29,6 +32,10 @@ func _ready() -> void:
 	SS.stats.score_changed.connect(on_score_changed)
 	
 	label_highscore.text = "%02d" % SS.stats.highscore
+	
+	# every player's inventory (both Pac-Men and the versus ghost) updates the item slots
+	for traveller in get_tree().get_nodes_in_group('pacmen') + get_tree().get_nodes_in_group('ghosts'):
+		traveller.item_holder.held_changed.connect(func(_item: ItemHolder.Item) -> void: update_item_slots())
 
 func on_game_mode_changed(mode: GM.Mode) -> void:
 	match mode:
@@ -59,10 +66,29 @@ func on_hichscore_changed(highscore: int) -> void:
 func on_score_changed(score: int) -> void:
 	label_score.text = "%02d" % score
 
+## The inventory shown in player 1's or player 2's item slot for the current game type.
+func get_player_item_holder(player: int) -> ItemHolder:
+	for pacman: Pacman in get_tree().get_nodes_in_group('pacmen'):
+		if pacman.player == player and pacman.is_active():
+			return pacman.item_holder
+	if player == 2 and GM.game_type == GM.GameType.VERSUS:
+		for ghost: Ghost in get_tree().get_nodes_in_group('ghosts'):
+			if ghost.can_be_player_controlled:
+				return ghost.item_holder
+	return null
+
+func update_item_slots() -> void:
+	var slots: Array[TextureRect] = [texturerect_item_p1, texturerect_item_p2]
+	for i in slots.size():
+		var holder: ItemHolder = get_player_item_holder(i + 1)
+		slots[i].texture = ItemHolder.ICONS.get(holder.held) if holder != null else null
+	hboxcontainer_item_p2.visible = GM.game_type != GM.GameType.SINGLE
+
 func on_start(game_type: GM.GameType) -> void:
 	vboxcontainer_menu.hide()
 	label_result.hide()
 	GM.game_type = game_type
+	update_item_slots()
 	GM.reset.emit(GM.ResetType.GAME)
 	audio_stream_player.play()
 	await audio_stream_player.finished

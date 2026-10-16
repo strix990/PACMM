@@ -94,7 +94,7 @@ var eaten: bool = false:
 		eaten = t
 		GM.ghosts_returning += 1 if t else -1
 		var points_earned: int = points
-		if t:
+		if t and !bombed:
 			SS.stats.score += points
 			SS.stats.ghosts_eaten += 1
 			SS.save_stats()
@@ -105,10 +105,13 @@ var eaten: bool = false:
 		animatedsprite_2d_default.visible = !t
 		animatedsprite_2d_eaten.visible = t
 		if t:
+			if item_holder:
+				item_holder.clear_effects()
 			# a player ghost may be standing still: pick the eyes' way home right away instead of
 			# waiting for the next tile (which never comes when not moving)
 			tile_direction_next = calculate_tile_direction_next()
-			freeze_and_show_points(points_earned)
+			if !bombed:
+				freeze_and_show_points(points_earned)
 var in_tunnel: bool = false
 var mode: GM.GhostMode = GM.ghost_mode:
 	set(m):
@@ -120,6 +123,9 @@ var mode: GM.GhostMode = GM.ghost_mode:
 var points: int = POINTS_DEFAULT
 ## Steered by player 2 instead of the AI (versus mode).
 var player_controlled: bool = false
+var item_holder: ItemHolder
+## Set while being sent home by a bomb: no points and no freeze for that.
+var bombed: bool = false
 var tile_target: Vector2i = Vector2i.ZERO:
 	set(tt):
 		if tt == tile_target:
@@ -129,7 +135,7 @@ var tile_target: Vector2i = Vector2i.ZERO:
 
 #region FUNCTIONS
 func _process(delta: float) -> void:
-	if GM.mode != GM.Mode.PLAYING:
+	if GM.mode != GM.Mode.PLAYING or stunned:
 		return
 	
 	super(delta)
@@ -141,13 +147,13 @@ func _process(delta: float) -> void:
 	if house_state != HouseState.NONE:
 		if house_target_point == Vector2.ZERO:
 			house_target_point = get_next_house_target_point()
-		global_position = global_position.move_toward(house_target_point, delta * speed)
+		global_position = global_position.move_toward(house_target_point, delta * get_current_speed())
 		if global_position == house_target_point:
 			house_target_point = get_next_house_target_point()
 		return
 	
 	if global_position != coords_move_to:
-		global_position = global_position.move_toward(coords_move_to, delta * speed)
+		global_position = global_position.move_toward(coords_move_to, delta * get_current_speed())
 		if eaten:
 			if tile == grid.get_tile_from_coords(house_entrance_point):
 				house_state = HouseState.GOING_IN
@@ -163,6 +169,9 @@ func _ready() -> void:
 	GM.mode_changed.connect(on_game_mode_changed)
 	GM.reset.connect(on_reset)
 	SS.stats.ghosts_eaten_changed.connect(on_ghosts_eaten_changed)
+	add_to_group('ghosts')
+	item_holder = ItemHolder.new()
+	add_child(item_holder)
 	tile_direction_changed.connect(on_tile_direction_changed)
 	timer_frighten.timeout.connect(on_timer_frighten_timeout)
 	timer_house.timeout.connect(on_timer_house_timeout)
@@ -322,6 +331,17 @@ func freeze_and_show_points(amount: int) -> void:
 
 func on_collected() -> void:
 	eaten = true
+
+## Hit by a bomb: back to the house as eyes, without points or the eaten freeze.
+func send_home() -> void:
+	bombed = true
+	eaten = true
+	bombed = false
+
+func get_item_actions() -> Array[String]:
+	if player_controlled:
+		return ['p2_item']
+	return []
 
 func on_game_mode_changed(m: GM.Mode) -> void:
 	match m:

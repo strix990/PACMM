@@ -33,17 +33,23 @@ var look_direction: Vector2i = Vector2.ZERO:
 var skip_next_frame: bool = false
 ## True while this Pac-Man plays its death (in co-op the other one just disappears).
 var dying: bool = false
+var item_holder: ItemHolder
 func _process(delta: float) -> void:
 	if GM.mode != GM.Mode.PLAYING:
 		return
 	if skip_next_frame:
 		skip_next_frame = false
+		# eating pellets slows Pac-Man down, but not while dashing
+		if item_holder.dash_time <= 0.0:
+			return
+	if stunned:
+		animated_sprite_2d.pause()
 		return
 	
 	super(delta)
 	get_input()
 	if global_position != coords_move_to:
-		global_position = global_position.move_toward(coords_move_to, delta * speed)
+		global_position = global_position.move_toward(coords_move_to, delta * get_current_speed())
 	# like the arcade, Pac-Man stops chomping while blocked by a wall
 	var blocked: bool = global_position == coords_move_to and tile_direction_next == Vector2i.ZERO
 	if blocked and animated_sprite_2d.is_playing():
@@ -61,6 +67,8 @@ func _ready() -> void:
 	collector_2d.audio_stream_player_2d.process_mode = Node.PROCESS_MODE_ALWAYS
 	GM.mode_changed.connect(on_game_mode_changed)
 	GM.reset.connect(on_reset)
+	item_holder = ItemHolder.new()
+	add_child(item_holder)
 
 func get_input() -> void:
 	for direction in read_input_directions(get_input_prefixes()):
@@ -74,6 +82,12 @@ func get_input_prefixes() -> Array[String]:
 	if GM.game_type == GM.GameType.SINGLE:
 		return ['p1_', 'p2_']
 	return ['p1_']
+
+func get_item_actions() -> Array[String]:
+	var actions: Array[String] = []
+	for prefix in get_input_prefixes():
+		actions.append(prefix + 'item')
+	return actions
 
 func is_active() -> bool:
 	return player == 1 or GM.game_type == GM.GameType.COOP
@@ -101,6 +115,10 @@ func get_speed() -> float:
 			return speed * 0.9
 
 func on_collectable_collected() -> void:
+	die()
+
+## Caught by a ghost or hit by a bomb.
+func die() -> void:
 	# in co-op, if both Pac-Men are caught at once only one life is lost
 	if GM.mode != GM.Mode.PLAYING:
 		return

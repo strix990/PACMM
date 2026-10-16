@@ -38,6 +38,14 @@ class_name GridTraveller extends Node2D
 
 signal tile_direction_changed(tile_direction: Vector2i)
 
+# item effects (see ItemHolder)
+## Multiplies the normal speed (speed boost, dash).
+var speed_multiplier: float = 1.0
+## Wall walk: walls inside the maze count as walkable.
+var can_pass_walls: bool = false
+## Stunned travellers don't read input or move.
+var stunned: bool = false
+
 const INPUT_DIRECTIONS: Dictionary[String, Vector2i] = {
 	'up': Vector2i.UP,
 	'left': Vector2i.LEFT,
@@ -63,15 +71,37 @@ func _process(_delta: float) -> void:
 func get_speed() -> float:
 	return speed
 
+## The speed to move with right now: the normal speed with item effects applied.
+func get_current_speed() -> float:
+	return get_speed() * speed_multiplier
+
+## After wall walking: if standing in a wall (or in the ghost house), jump to the nearest
+## walkable tile outside the house.
+func snap_to_walkable_tile() -> void:
+	var queue: Array[Vector2i] = [tile]
+	var seen: Dictionary = {tile: true}
+	while !queue.is_empty():
+		var cell: Vector2i = queue.pop_front()
+		if is_tile_walkable(cell) and !grid.is_in_house(cell):
+			# already fine: on open floor and heading to open floor
+			if cell == tile and is_tile_walkable(grid.get_tile_from_coords(coords_move_to)):
+				return
+			global_position = grid.get_coords_from_tile(cell)
+			coords_move_to = global_position
+			tile = cell
+			return
+		for direction: Vector2i in INPUT_DIRECTIONS.values():
+			var next: Vector2i = cell + direction
+			if !seen.has(next) and grid.is_inside_maze(next):
+				seen[next] = true
+				queue.append(next)
+
 func calculate_tile_direction_next() -> Vector2i:
 	if grid == null or tile_direction == Vector2i.ZERO:
 		return Vector2i.ZERO
 	return tile_direction if is_tile_walkable(tile + tile_direction) else Vector2i.ZERO
 
 func is_tile_walkable(t: Vector2i) -> bool:
-	var tile_data: TileData = grid.get_tiledata_from_tile(t)
-	if tile_data != null and tile_data.has_custom_data('type'):
-		match tile_data.get_custom_data('type'):
-			'wall':
-				return false
-	return true
+	if can_pass_walls and grid.is_inside_maze(t):
+		return true
+	return !grid.is_wall(t)

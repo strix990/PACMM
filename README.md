@@ -16,6 +16,23 @@ reskinned with the Pac-Man sprites and sounds from the first Godot Pac-Man tutor
 
 In versus, Pac-Man wins by eating every pellet and the ghost wins when Pac-Man runs out of lives.
 
+## Items
+
+A **?** item box appears below the ghost house 15 s into a game, and again 15 s after someone takes it.
+Every player (both Pac-Men, and the ghost in versus) can hold **one** item, shown in the HUD slot at the
+bottom right; a player who is already holding one can't take the box. Use it with **Space** (P1) or **Enter** (P2).
+
+| Box gives (20 % each) | Effect |
+| --- | --- |
+| Speed boost | ×1.5 speed for 5 s |
+| Dash | short burst of about 4 tiles |
+| Wall walk | pass through walls for 5 s (you can't leave the maze; you pop out to the nearest corridor at the end) |
+| Bomb | explodes after 2 s in a + shape, 3 tiles each way (walls stop it); **hits everyone**, including you: Pac-Men die, ghosts go home as eyes |
+| Stun (bad luck) | frozen for 2 s straight away, no item |
+
+Losing a life clears held items and active effects. The numbers are constants in
+`utilities/items/item_holder.gd`, `entities/items/bomb.gd` and `entities/items/item_box.gd`.
+
 ## Where things are
 
 | Folder | Contents |
@@ -29,4 +46,6 @@ In versus, Pac-Man wins by eating every pellet and the ghost wins when Pac-Man r
 | `utilities/ghost_manager` | Scatter/chase schedule and ghost sounds |
 | `utilities/game_manager` | Lives, levels, game mode (autoload `GM`) |
 | `utilities/save_system` | Score/highscore saving (autoload `SS`) |
+| `utilities/items` | Player inventory and item effects (`ItemHolder`) |
+| `entities/items` | The item box and the bomb, plus the item icons |
 # PACMM

@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/items/item_box.gd" id="1_box"]
+[ext_resource type="Texture2D" path="res://entities/items/item_box.png" id="2_box"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_box"]
+size = Vector2(8, 8)
+
+[node name="ItemBox" type="Node2D"]
+script = ExtResource("1_box")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_box")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_box")
