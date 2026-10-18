@@ -2,6 +2,13 @@ class_name GameManager extends Node
 
 const LIVES_MIN: int = 0
 const LIVES_MAX: int = 8
+const LIVES_START: int = 3
+## Versus balance: Pac-Man starts with fewer lives against a human ghost.
+const VERSUS_LIVES_START: int = 2
+## Pellets (incl. power pellets) in a level; eating them all clears the level.
+const PELLETS_PER_LEVEL: int = 244
+## Versus is a single maze played with this level's speeds, frightened time and ghost schedule.
+const VERSUS_LEVEL: int = 5
 
 enum GhostMode {
 	CHASE,
@@ -38,7 +45,7 @@ var pellets_eaten: int = 0:
 		if pellets_eaten < 0 or mc == pellets_eaten:
 			return
 		pellets_eaten = mc
-		if mc == 244:
+		if mc == PELLETS_PER_LEVEL:
 			if game_type == GameType.VERSUS:
 				winner = 'pacman'
 				mode = Mode.OVER
@@ -142,6 +149,6 @@ func on_reset(type: ResetType) -> void:
 	power_pellets_eaten = 0
 	if type == ResetType.GAME:
 		winner = ''
-		level = 1
-		lives = 3
+		level = VERSUS_LEVEL if game_type == GameType.VERSUS else 1
+		lives = VERSUS_LIVES_START if game_type == GameType.VERSUS else LIVES_START
 		SS.stats.score = 0

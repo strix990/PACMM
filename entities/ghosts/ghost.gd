@@ -18,6 +18,10 @@ const DIRECTION_MAP: Dictionary[String, Vector2i] = {
 }
 const FRIGHTEN_ALMOST_OVER_TIME: float = 2.0
 const POINTS_DEFAULT: int = 200
+## Versus balance: the player-controlled ghost is this much faster than a normal ghost.
+const VERSUS_SPEED_MULTIPLIER: float = 1.1
+## Once half of the level's pellets are eaten, every ghost gets this much faster (all modes).
+const HALF_PELLETS_SPEED_MULTIPLIER: float = 1.05
 const POINTS_LABEL_COLOR: Color = Color('#ff0000')
 ## How long the game freezes (and shows the points) after eating a ghost.
 const POINTS_LABEL_TIME: float = 1.0
@@ -94,10 +98,13 @@ var eaten: bool = false:
 		eaten = t
 		GM.ghosts_returning += 1 if t else -1
 		var points_earned: int = points
-		if t and !bombed:
-			SS.stats.score += points
-			SS.stats.ghosts_eaten += 1
-			SS.save_stats()
+		if t:
+			# eyes can't catch Pac-Man (a bombed ghost wasn't frightened, so this wasn't off yet)
+			collector_2d.disabled = true
+			if !bombed:
+				SS.stats.score += points
+				SS.stats.ghosts_eaten += 1
+				SS.save_stats()
 		else:
 			collector_2d.disabled = false
 		# to keep things simple, just always set frighten to false at this point
@@ -218,6 +225,13 @@ func get_next_house_target_point() -> Vector2:
 			var below: Vector2 = Vector2(house_waiting_point.x, house_waiting_point.y + 4)
 			return above if house_target_point != above else below
 	return Vector2.ZERO
+
+## Item effects, the versus bonus for the player-controlled ghost and the half-pellets speed-up.
+func get_current_speed() -> float:
+	var multiplier: float = VERSUS_SPEED_MULTIPLIER if player_controlled else 1.0
+	if GM.pellets_eaten >= GM.PELLETS_PER_LEVEL / 2:
+		multiplier *= HALF_PELLETS_SPEED_MULTIPLIER
+	return super() * multiplier
 
 func get_speed() -> float:
 	if eaten:
@@ -355,7 +369,9 @@ func on_game_mode_changed(m: GM.Mode) -> void:
 			
 
 func on_frighten_ghosts(time: float) -> void:
-	if eaten:
+	# ghosts sitting out a versus match would stay frightened forever (their timer is disabled),
+	# keeping everyone at frightened speed
+	if eaten or !is_active():
 		return
 	frighten = true
 	timer_frighten.start(time)

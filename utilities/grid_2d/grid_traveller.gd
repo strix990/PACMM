@@ -75,26 +75,15 @@ func get_speed() -> float:
 func get_current_speed() -> float:
 	return get_speed() * speed_multiplier
 
-## After wall walking: if standing in a wall (or in the ghost house), jump to the nearest
-## walkable tile outside the house.
+## After wall walking: unless already in a corridor (and heading into one), jump to the nearest
+## playfield tile (never a wall, the ghost house or outside the maze).
 func snap_to_walkable_tile() -> void:
-	var queue: Array[Vector2i] = [tile]
-	var seen: Dictionary = {tile: true}
-	while !queue.is_empty():
-		var cell: Vector2i = queue.pop_front()
-		if is_tile_walkable(cell) and !grid.is_in_house(cell):
-			# already fine: on open floor and heading to open floor
-			if cell == tile and is_tile_walkable(grid.get_tile_from_coords(coords_move_to)):
-				return
-			global_position = grid.get_coords_from_tile(cell)
-			coords_move_to = global_position
-			tile = cell
-			return
-		for direction: Vector2i in INPUT_DIRECTIONS.values():
-			var next: Vector2i = cell + direction
-			if !seen.has(next) and grid.is_inside_maze(next):
-				seen[next] = true
-				queue.append(next)
+	if grid.is_playable(tile) and grid.is_playable(grid.get_tile_from_coords(coords_move_to)):
+		return
+	var target: Vector2i = grid.get_nearest_playable_tile(tile)
+	global_position = grid.get_coords_from_tile(target)
+	coords_move_to = global_position
+	tile = target
 
 func calculate_tile_direction_next() -> Vector2i:
 	if grid == null or tile_direction == Vector2i.ZERO:
@@ -102,6 +91,10 @@ func calculate_tile_direction_next() -> Vector2i:
 	return tile_direction if is_tile_walkable(tile + tile_direction) else Vector2i.ZERO
 
 func is_tile_walkable(t: Vector2i) -> bool:
-	if can_pass_walls and grid.is_inside_maze(t):
-		return true
+	# bombs block everyone (even wall walkers); whoever stands on one can still step off it
+	if t != tile and grid.has_bomb(t):
+		return false
+	# wall walk: through the maze's walls, but never out into the empty space around it
+	if can_pass_walls:
+		return grid.is_inside_maze(t) or grid.is_playable(t)
 	return !grid.is_wall(t)

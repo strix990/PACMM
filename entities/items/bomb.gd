@@ -14,12 +14,26 @@ var grid: Grid2D
 var time: float = 0.0
 var exploded: bool = false
 var blast_tiles: Array[Vector2i] = []
+## The tile this bomb blocks until it explodes.
+var bomb_tile: Vector2i
+var blocking: bool = false
 
 @onready var sprite_2d: Sprite2D = $Sprite2D
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
 func _ready() -> void:
 	GM.reset.connect(func(_type: GM.ResetType) -> void: queue_free())
+	bomb_tile = grid.get_tile_from_coords(position)
+	grid.add_bomb(bomb_tile)
+	blocking = true
+
+func _exit_tree() -> void:
+	stop_blocking()
+
+func stop_blocking() -> void:
+	if blocking:
+		blocking = false
+		grid.remove_bomb(bomb_tile)
 
 func _process(delta: float) -> void:
 	if GM.mode != GM.Mode.PLAYING:
@@ -39,7 +53,8 @@ func _process(delta: float) -> void:
 func explode() -> void:
 	exploded = true
 	sprite_2d.hide()
-	var center: Vector2i = grid.get_tile_from_coords(position)
+	stop_blocking()
+	var center: Vector2i = bomb_tile
 	blast_tiles = [center]
 	for direction: Vector2i in GridTraveller.INPUT_DIRECTIONS.values():
 		for i in range(1, RANGE + 1):
