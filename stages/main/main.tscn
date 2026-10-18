@@ -22,6 +22,7 @@
 [ext_resource type="AudioStream" uid="uid://b8j833k4tkkfi" path="res://entities/ghosts/audio/the-return-of-the-8-bit-era/the-return-of-the-8-bit-era-301292-pitch-4.wav" id="15_ux6lt"]
 [ext_resource type="Texture2D" uid="uid://db4omi7en4l18" path="res://entities/pellets/pellets.png" id="18_0eiup"]
 [ext_resource type="Script" path="res://stages/maze_outline.gd" id="19_maze"]
+[ext_resource type="PackedScene" path="res://entities/items/item_box.tscn" id="20_itembox"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_mlblm"]
 texture = ExtResource("2_0eiup")
@@ -78,8 +79,20 @@ visible = false
 script = ExtResource("19_maze")
 tile_map_layer = NodePath("../TileMapLayer")
 
+[node name="ItemBox" parent="." instance=ExtResource("20_itembox")]
+position = Vector2(112, 164)
+
 [node name="Pacman" parent="." unique_id=384717039 node_paths=PackedStringArray("grid") instance=ExtResource("3_5powy")]
 position = Vector2(112, 212)
+coop_spawn_point = Vector2(100, 212)
+coop_tile_direction_reset = Vector2i(-1, 0)
+grid = NodePath("../Grid2D")
+tile_direction_reset = Vector2i(1, 0)
+
+[node name="Pacman2" parent="." node_paths=PackedStringArray("grid") instance=ExtResource("3_5powy")]
+position = Vector2(124, 212)
+player = 2
+tint = Color(0.4, 1, 0.4, 1)
 grid = NodePath("../Grid2D")
 tile_direction_reset = Vector2i(1, 0)
 

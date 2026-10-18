@@ -3,11 +3,20 @@
 [ext_resource type="Theme" uid="uid://7iwb4w13baxm" path="res://config/theme/default_theme.tres" id="1_norf8"]
 [ext_resource type="Script" uid="uid://c1muhmw4wcwei" path="res://ui/game/ui_game.gd" id="2_perei"]
 [ext_resource type="Texture2D" uid="uid://ut6d4b4sq4en" path="res://entities/pacman/pacman.png" id="3_perei"]
+[ext_resource type="PackedScene" path="res://ui/character_select/character_select.tscn" id="5_select"]
 [ext_resource type="AudioStream" uid="uid://o8iuo24t1q6q" path="res://ui/game/audio/so-happy-with-my-8-bit-game/so-happy-with-my-8-bit-game-301275_intro.wav" id="4_perei"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_no1gd"]
 atlas = ExtResource("3_perei")
 region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_itemslot"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
 
 [node name="UIGame" type="Control"]
 layout_mode = 3
@@ -98,10 +107,28 @@ layout_mode = 2
 text = "00"
 horizontal_alignment = 2
 
-[node name="button_start" type="Button" parent="VBoxContainer"]
+[node name="vboxcontainer_menu" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "START NEW GAME"
+theme_override_constants/separation = 4
+
+[node name="label_result" type="Label" parent="VBoxContainer/vboxcontainer_menu"]
+visible = false
+layout_mode = 2
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="button_single" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
+layout_mode = 2
+text = "1 PLAYER"
+
+[node name="button_coop" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
+layout_mode = 2
+text = "CO-OP"
+
+[node name="button_versus" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
+layout_mode = 2
+text = "VERSUS"
 
 [node name="hboxcontainer_bottom" type="HBoxContainer" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 16)
@@ -159,6 +186,59 @@ visible = false
 layout_mode = 2
 texture = SubResource("AtlasTexture_no1gd")
 flip_h = true
+
+[node name="margincontainer_items" type="MarginContainer" parent="VBoxContainer/hboxcontainer_bottom"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/margin_right = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="hboxcontainer_item_p1" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1"]
+layout_mode = 2
+text = "1P"
+
+[node name="panel_item_p1" type="Panel" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_itemslot")
+
+[node name="texturerect_item_p1" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p1/panel_item_p1"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 17.0
+offset_bottom = 17.0
+
+[node name="hboxcontainer_item_p2" type="HBoxContainer" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2"]
+layout_mode = 2
+text = "2P"
+
+[node name="panel_item_p2" type="Panel" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_itemslot")
+
+[node name="texturerect_item_p2" type="TextureRect" parent="VBoxContainer/hboxcontainer_bottom/margincontainer_items/HBoxContainer/hboxcontainer_item_p2/panel_item_p2"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 17.0
+offset_bottom = 17.0
+
+[node name="CharacterSelect" parent="." instance=ExtResource("5_select")]
+layout_mode = 1
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_perei")
