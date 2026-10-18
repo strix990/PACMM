@@ -1,6 +1,7 @@
 class_name UIGame extends Control
 
 @onready var audio_stream_player: AudioStreamPlayer = $AudioStreamPlayer
+@onready var character_select: CharacterSelect = $CharacterSelect
 @onready var vboxcontainer_menu: VBoxContainer = $VBoxContainer/vboxcontainer_menu
 @onready var label_result: Label = $VBoxContainer/vboxcontainer_menu/label_result
 @onready var button_single: Button = $VBoxContainer/vboxcontainer_menu/button_single
@@ -22,9 +23,11 @@ class_name UIGame extends Control
 @onready var texturerect_life_8: TextureRect = $VBoxContainer/hboxcontainer_bottom/margincontainer_lives/HBoxContainer/texturerect_life_8
 
 func _ready() -> void:
-	button_single.pressed.connect(on_start.bind(GM.GameType.SINGLE))
-	button_coop.pressed.connect(on_start.bind(GM.GameType.COOP))
-	button_versus.pressed.connect(on_start.bind(GM.GameType.VERSUS))
+	button_single.pressed.connect(on_single_player)
+	button_coop.pressed.connect(open_character_select.bind(GM.GameType.COOP))
+	button_versus.pressed.connect(open_character_select.bind(GM.GameType.VERSUS))
+	character_select.start_requested.connect(on_start)
+	character_select.back_requested.connect(func() -> void: vboxcontainer_menu.show())
 	GM.level_changed.connect(on_level_changed)
 	GM.lives_changed.connect(on_lives_changed)
 	GM.mode_changed.connect(on_game_mode_changed)
@@ -73,7 +76,7 @@ func get_player_item_holder(player: int) -> ItemHolder:
 			return pacman.item_holder
 	if player == 2 and GM.game_type == GM.GameType.VERSUS:
 		for ghost: Ghost in get_tree().get_nodes_in_group('ghosts'):
-			if ghost.can_be_player_controlled:
+			if ghost.name == GM.versus_ghost:
 				return ghost.item_holder
 	return null
 
@@ -84,11 +87,22 @@ func update_item_slots() -> void:
 		slots[i].texture = ItemHolder.ICONS.get(holder.held) if holder != null else null
 	hboxcontainer_item_p2.visible = GM.game_type != GM.GameType.SINGLE
 
+## Single player always plays the classic Pac-Man.
+func on_single_player() -> void:
+	GM.pacman_skins[0] = 0
+	on_start(GM.GameType.SINGLE)
+
+func open_character_select(game_type: GM.GameType) -> void:
+	vboxcontainer_menu.hide()
+	character_select.open(game_type)
+
 func on_start(game_type: GM.GameType) -> void:
 	vboxcontainer_menu.hide()
 	label_result.hide()
 	GM.game_type = game_type
 	update_item_slots()
+	# the lives icons show player 1's Pac-Man (all lives icons share this texture)
+	texturerect_life_1.texture.atlas = PacmanSkins.get_sheet(GM.pacman_skins[0])
 	GM.reset.emit(GM.ResetType.GAME)
 	audio_stream_player.play()
 	await audio_stream_player.finished

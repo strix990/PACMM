@@ -16,6 +16,21 @@ reskinned with the Pac-Man sprites and sounds from the first Godot Pac-Man tutor
 
 In versus, Pac-Man wins by eating every pellet and the ghost wins when Pac-Man runs out of lives.
 
+## Character select
+
+**CO-OP** and **VERSUS** open a character select screen. In co-op both players pick a Pac-Man skin
+(they can't pick the same one); in versus player 1 picks a Pac-Man skin and player 2 picks which ghost to play.
+Move with **A/D** (P1) or **←/→** (P2), lock in with **Space** / **Enter**, and press it again once both are
+ready to start (clicking works too; **Esc** goes back). 1 PLAYER always uses the classic Pac-Man.
+
+Skins: Classic, Stylish Pac, HalloPac, SharkPac and SpideyPac. The custom ones are drawn in Aseprite
+(`~/Documents/Sprites/*.ase`, 32x32 frames) and converted for the game with
+
+    python3 tools/import_skins.py ~/Documents/Sprites
+
+which writes `entities/pacman/skins/` (16x16 in-game sheets plus full-size previews for the select screen).
+Rerun it after editing the art; the skin list itself is in `entities/pacman/pacman_skins.gd`.
+
 ## Items
 
 A **?** item box appears below the ghost house 15 s into a game, and again 15 s after someone takes it.
@@ -37,7 +52,7 @@ Losing a life clears held items and active effects. The numbers are constants in
 
 | Folder | Contents |
 | --- | --- |
-| `entities/pacman` | Pac-Man (`Pacman`) |
+| `entities/pacman` | Pac-Man (`Pacman`) and its skins (`PacmanSkins`, `skins/`) |
 | `entities/ghosts` | Shared ghost logic (`Ghost`) and one folder per ghost with its chase target (`RedGhost`, `PinkGhost`, `CyanGhost`, `OrangeGhost`) |
 | `entities/pellets` | Pellets (`Pellet`), power pellets (`PowerPellet`) and their spawner |
 | `entities/tunnel` | Side tunnels (ghosts slow down inside) |
@@ -48,4 +63,6 @@ Losing a life clears held items and active effects. The numbers are constants in
 | `utilities/save_system` | Score/highscore saving (autoload `SS`) |
 | `utilities/items` | Player inventory and item effects (`ItemHolder`) |
 | `entities/items` | The item box and the bomb, plus the item icons |
+| `ui/character_select` | The co-op / versus character select screen |
+| `tools` | `import_skins.py`: converts Aseprite skins into game sprites |
 # PACMM

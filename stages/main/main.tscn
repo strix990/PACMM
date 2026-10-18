@@ -99,7 +99,6 @@ tile_direction_reset = Vector2i(1, 0)
 [node name="RedGhost" parent="." unique_id=664029794 node_paths=PackedStringArray("pacman", "grid") instance=ExtResource("8_no1gd")]
 position = Vector2(112, 116)
 pacman = NodePath("../Pacman")
-can_be_player_controlled = true
 tile_target_scatter = Vector2i(24, 0)
 grid = NodePath("../Grid2D")
 tile_direction_reset = Vector2i(-1, 0)

@@ -3,6 +3,7 @@
 [ext_resource type="Theme" uid="uid://7iwb4w13baxm" path="res://config/theme/default_theme.tres" id="1_norf8"]
 [ext_resource type="Script" uid="uid://c1muhmw4wcwei" path="res://ui/game/ui_game.gd" id="2_perei"]
 [ext_resource type="Texture2D" uid="uid://ut6d4b4sq4en" path="res://entities/pacman/pacman.png" id="3_perei"]
+[ext_resource type="PackedScene" path="res://ui/character_select/character_select.tscn" id="5_select"]
 [ext_resource type="AudioStream" uid="uid://o8iuo24t1q6q" path="res://ui/game/audio/so-happy-with-my-8-bit-game/so-happy-with-my-8-bit-game-301275_intro.wav" id="4_perei"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_no1gd"]
@@ -235,6 +236,9 @@ offset_left = 1.0
 offset_top = 1.0
 offset_right = 17.0
 offset_bottom = 17.0
+
+[node name="CharacterSelect" parent="." instance=ExtResource("5_select")]
+layout_mode = 1
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_perei")

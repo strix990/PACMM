@@ -39,6 +39,10 @@ enum GameType {
 var game_type: GameType = GameType.SINGLE
 ## Who won the last versus game: 'pacman' or 'ghost' (empty otherwise).
 var winner: String = ''
+## Chosen on the character select screen: Pac-Man skin per player (index into PacmanSkins.SKINS)
+## and the ghost player 2 controls in versus (node name in the main scene).
+var pacman_skins: Array[int] = [0, 0]
+var versus_ghost: String = 'RedGhost'
 
 var pellets_eaten: int = 0:
 	set(mc):

@@ -20,6 +20,8 @@ const FRIGHTEN_ALMOST_OVER_TIME: float = 2.0
 const POINTS_DEFAULT: int = 200
 ## Versus balance: the player-controlled ghost is this much faster than a normal ghost.
 const VERSUS_SPEED_MULTIPLIER: float = 1.1
+## After being eaten, the versus ghost leaves the house after this long.
+const PLAYER_HOUSE_WAIT_TIME: float = 0.05
 ## Once half of the level's pellets are eaten, every ghost gets this much faster (all modes).
 const HALF_PELLETS_SPEED_MULTIPLIER: float = 1.05
 const POINTS_LABEL_COLOR: Color = Color('#ff0000')
@@ -40,8 +42,6 @@ static var freeze_count: int = 0
 		house_state_reset = hsr
 @export var house_waiting_point: Vector2 = Vector2(112, 140)
 @export var pacman: Pacman
-## Only this ghost plays in versus mode, steered by player 2 with the arrow keys.
-@export var can_be_player_controlled: bool = false
 @export var spawn_point: Vector2 = Vector2.ZERO
 @export var tile_target_scatter: Vector2i = Vector2i.ZERO
 
@@ -128,8 +128,10 @@ var mode: GM.GhostMode = GM.ghost_mode:
 			tile_direction = -tile_direction
 		mode = m
 var points: int = POINTS_DEFAULT
-## Steered by player 2 instead of the AI (versus mode).
+## Steered by player 2 instead of the AI: the ghost chosen for versus (GM.versus_ghost).
 var player_controlled: bool = false
+## The house timer as set up in the scene (the versus ghost leaves the house right away instead).
+var house_wait_time: float
 var item_holder: ItemHolder
 ## Set while being sent home by a bomb: no points and no freeze for that.
 var bombed: bool = false
@@ -177,6 +179,7 @@ func _ready() -> void:
 	GM.reset.connect(on_reset)
 	SS.stats.ghosts_eaten_changed.connect(on_ghosts_eaten_changed)
 	add_to_group('ghosts')
+	house_wait_time = timer_house.wait_time
 	item_holder = ItemHolder.new()
 	add_child(item_holder)
 	tile_direction_changed.connect(on_tile_direction_changed)
@@ -313,7 +316,7 @@ func get_target_pacman() -> Pacman:
 	return target
 
 func is_active() -> bool:
-	return GM.game_type != GM.GameType.VERSUS or can_be_player_controlled
+	return GM.game_type != GM.GameType.VERSUS or name == GM.versus_ghost
 
 ## Like the arcade: freeze the game for a moment and show the points earned for eating this
 ## ghost where it was caught, with Pac-Man and the eaten ghost hidden meanwhile.
@@ -404,17 +407,19 @@ func on_tunnel_trigger_area_exited(area: Area2D) -> void:
 		in_tunnel = false
 
 func on_reset(_type: GM.ResetType) -> void:
-	player_controlled = can_be_player_controlled and GM.game_type == GM.GameType.VERSUS
+	player_controlled = GM.game_type == GM.GameType.VERSUS and name == GM.versus_ghost
+	timer_house.wait_time = PLAYER_HOUSE_WAIT_TIME if player_controlled else house_wait_time
 	# in versus the AI ghosts sit the match out (hidden, disabled, no collisions)
 	visible = is_active()
 	process_mode = Node.PROCESS_MODE_INHERIT if is_active() else Node.PROCESS_MODE_DISABLED
 	frighten = false
 	eaten = false
-	global_position = spawn_point
-	house_state = house_state_reset
+	# the versus ghost always starts outside the house, at its entrance, whatever its colour
+	global_position = house_entrance_point if player_controlled else spawn_point
+	house_state = HouseState.NONE if player_controlled else house_state_reset
 	house_target_point = Vector2i.ZERO
 	points = POINTS_DEFAULT
 	tile = grid.get_tile_from_coords(global_position)
-	tile_direction = tile_direction_reset
+	tile_direction = Vector2i.LEFT if player_controlled else tile_direction_reset
 	tile_target = Vector2i.ZERO
 #endregion

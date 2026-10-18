@@ -4,6 +4,7 @@ class_name Pacman extends GridTraveller
 @export var audio_stream_death_2: AudioStream
 ## 1 or 2. Player 2 only plays in co-op and uses the arrow keys.
 @export var player: int = 1
+## Tint for the classic skin only (player 2's classic Pac-Man is green in co-op).
 @export var tint: Color = Color.WHITE
 ## Start position/direction in co-op (Vector2.ZERO / Vector2i.ZERO = same as single player).
 @export var coop_spawn_point: Vector2 = Vector2.ZERO
@@ -155,11 +156,18 @@ func on_game_mode_changed(mode: GM.Mode) -> void:
 				if GM.mode == GM.Mode.DEATH:
 					visible = false
 
-func on_reset(_type: GM.ResetType) -> void:
+func on_reset(type: GM.ResetType) -> void:
 	dying = false
+	if type == GM.ResetType.GAME:
+		apply_skin(GM.pacman_skins[player - 1])
 	var coop: bool = GM.game_type == GM.GameType.COOP
 	global_position = coop_spawn_point if coop and coop_spawn_point != Vector2.ZERO else spawn_point
 	tile = grid.get_tile_from_coords(global_position)
 	tile_direction = coop_tile_direction_reset if coop and coop_tile_direction_reset != Vector2i.ZERO else tile_direction_reset
 	look_direction = tile_direction
 	set_active(is_active())
+
+## Use one of PacmanSkins.SKINS (chosen on the character select screen).
+func apply_skin(skin: int) -> void:
+	animated_sprite_2d.sprite_frames = PacmanSkins.build_sprite_frames(skin)
+	animated_sprite_2d.self_modulate = tint if skin == 0 else Color.WHITE
