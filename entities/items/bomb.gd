@@ -9,6 +9,9 @@ const RANGE: int = 3
 const FLAME_TIME: float = 0.5
 const FLAME_OUTER_COLOR: Color = Color('#ff7a1a')
 const FLAME_INNER_COLOR: Color = Color('#ffe14a')
+## Sprite frames (entities/items/item_bomb.png): two fuse frames, then the explosion.
+const FUSE_FRAMES: Array[int] = [0, 1]
+const EXPLOSION_FRAME: int = 2
 
 var grid: Grid2D
 var time: float = 0.0
@@ -17,6 +20,8 @@ var blast_tiles: Array[Vector2i] = []
 ## The tile this bomb blocks until it explodes.
 var bomb_tile: Vector2i
 var blocking: bool = false
+## How far the fuse animation has got (in frames); it speeds up as the fuse burns down.
+var fuse_phase: float = 0.0
 
 @onready var sprite_2d: Sprite2D = $Sprite2D
 @onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
@@ -40,9 +45,9 @@ func _process(delta: float) -> void:
 		return
 	time += delta
 	if !exploded:
-		# blink faster and faster as the fuse burns down
-		var period: float = lerpf(0.4, 0.08, time / FUSE_TIME)
-		sprite_2d.visible = fmod(time, period) < period * 0.6
+		# the fuse flickers faster and faster as it burns down
+		fuse_phase += delta / lerpf(0.25, 0.05, time / FUSE_TIME)
+		sprite_2d.frame = FUSE_FRAMES[int(fuse_phase) % FUSE_FRAMES.size()]
 		if time >= FUSE_TIME:
 			explode()
 		return
@@ -52,7 +57,8 @@ func _process(delta: float) -> void:
 
 func explode() -> void:
 	exploded = true
-	sprite_2d.hide()
+	# the explosion frame sits on the bomb's tile, on top of the flames, while they last
+	sprite_2d.frame = EXPLOSION_FRAME
 	stop_blocking()
 	var center: Vector2i = bomb_tile
 	blast_tiles = [center]

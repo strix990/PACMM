@@ -80,12 +80,31 @@ func get_player_item_holder(player: int) -> ItemHolder:
 				return ghost.item_holder
 	return null
 
+## What each item slot (P1, P2) shows, for the icon animation.
+var slot_items: Array[ItemHolder.Item] = [ItemHolder.Item.NONE, ItemHolder.Item.NONE]
+var slot_anim_time: float = 0.0
+
 func update_item_slots() -> void:
 	var slots: Array[TextureRect] = [texturerect_item_p1, texturerect_item_p2]
 	for i in slots.size():
 		var holder: ItemHolder = get_player_item_holder(i + 1)
-		slots[i].texture = ItemHolder.ICONS.get(holder.held) if holder != null else null
+		slot_items[i] = holder.held if holder != null else ItemHolder.Item.NONE
+		if slot_items[i] == ItemHolder.Item.NONE:
+			slots[i].texture = null
+		else:
+			var icon: AtlasTexture = AtlasTexture.new()
+			icon.atlas = ItemHolder.ICONS[slot_items[i]]
+			icon.region = ItemHolder.get_icon_region(slot_items[i], slot_anim_time)
+			slots[i].texture = icon
 	hboxcontainer_item_p2.visible = GM.game_type != GM.GameType.SINGLE
+
+## Loops the held items' icon animations.
+func _process(delta: float) -> void:
+	slot_anim_time += delta
+	var slots: Array[TextureRect] = [texturerect_item_p1, texturerect_item_p2]
+	for i in slots.size():
+		if slot_items[i] != ItemHolder.Item.NONE and slots[i].texture is AtlasTexture:
+			slots[i].texture.region = ItemHolder.get_icon_region(slot_items[i], slot_anim_time)
 
 ## Single player always plays the classic Pac-Man.
 func on_single_player() -> void:

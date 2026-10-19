@@ -22,12 +22,28 @@ const STUN_MODULATE: Color = Color(0.5, 0.5, 0.5)
 
 ## Loaded on use (not preloaded) so the bomb, which knows about Pac-Man and ghosts, isn't a load cycle.
 const BOMB_SCENE_PATH: String = 'res://entities/items/bomb.tscn'
+## Item icons: strips of ICON_FRAME_SIZE square animation frames, looped in the HUD item slot.
 const ICONS: Dictionary = {
 	Item.SPEED: preload('res://entities/items/item_speed.png'),
 	Item.DASH: preload('res://entities/items/item_dash.png'),
 	Item.WALL_WALK: preload('res://entities/items/item_wall_walk.png'),
 	Item.BOMB: preload('res://entities/items/item_bomb.png'),
 }
+const ICON_FRAME_SIZE: int = 16
+const ICON_FRAME_TIME: float = 0.15
+## Frames each icon loops through (the bomb's last frame is its explosion, used by the bomb itself).
+const ICON_LOOPS: Dictionary = {
+	Item.SPEED: [0, 1, 2],
+	Item.DASH: [0, 1, 2],
+	Item.WALL_WALK: [0, 1, 2],
+	Item.BOMB: [0, 1],
+}
+
+## The part of the item's icon strip to show after `time` seconds of animation.
+static func get_icon_region(item: Item, time: float) -> Rect2:
+	var frames: Array = ICON_LOOPS[item]
+	var frame: int = frames[int(time / ICON_FRAME_TIME) % frames.size()]
+	return Rect2(frame * ICON_FRAME_SIZE, 0, ICON_FRAME_SIZE, ICON_FRAME_SIZE)
 
 var held: Item = Item.NONE:
 	set(h):
