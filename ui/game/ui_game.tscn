@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://c1muhmw4wcwei" path="res://ui/game/ui_game.gd" id="2_perei"]
 [ext_resource type="Texture2D" uid="uid://ut6d4b4sq4en" path="res://entities/pacman/pacman.png" id="3_perei"]
 [ext_resource type="PackedScene" path="res://ui/character_select/character_select.tscn" id="5_select"]
+[ext_resource type="Texture2D" path="res://ui/game/logo.png" id="6_logo"]
 [ext_resource type="AudioStream" uid="uid://o8iuo24t1q6q" path="res://ui/game/audio/so-happy-with-my-8-bit-game/so-happy-with-my-8-bit-game-301275_intro.wav" id="4_perei"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_no1gd"]
@@ -112,6 +113,12 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 4
 
+[node name="texturerect_logo" type="TextureRect" parent="VBoxContainer/vboxcontainer_menu"]
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("6_logo")
+stretch_mode = 3
+
 [node name="label_result" type="Label" parent="VBoxContainer/vboxcontainer_menu"]
 visible = false
 layout_mode = 2
@@ -120,14 +127,20 @@ horizontal_alignment = 1
 
 [node name="button_single" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
 layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 4
 text = "1 PLAYER"
 
 [node name="button_coop" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
 layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 4
 text = "CO-OP"
 
 [node name="button_versus" type="Button" parent="VBoxContainer/vboxcontainer_menu"]
 layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 4
 text = "VERSUS"
 
 [node name="hboxcontainer_bottom" type="HBoxContainer" parent="VBoxContainer"]
