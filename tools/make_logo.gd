@@ -1,8 +1,8 @@
 extends SceneTree
 ## Draws the arcade-style "PACMANIA" title logo into res://ui/game/logo.png.
 ## Run from the project folder:  godot --headless --path . -s tools/make_logo.gd
-## Chunky pixel letters (7x7 grid with double-width vertical strokes, scaled up) with a yellow -> orange -> red gradient, a light highlight on
-## the top edges, a dark outline and a purple 3D drop shadow.
+## Chunky pixel letters (7x7 grid with double-width vertical strokes, scaled up) in Pac-Man's yellow,
+## with a dark outline.
 
 const TEXT: String = 'PACMANIA'
 const GLYPH_W: int = 7
@@ -10,14 +10,11 @@ const GLYPH_H: int = 7
 const SCALE: Vector2i = Vector2i(3, 4) # screen pixels per letter-grid cell (x, y)
 const LETTER_GAP: int = 4
 const OUTLINE: int = 2
-const SHADOW_DEPTH: int = 4
 const OUTPUT: String = 'res://ui/game/logo.png'
 
-const GRADIENT: Array[Color] = [Color('#fff27a'), Color('#ffd23f'), Color('#ffa12b'), Color('#ff6a1f'), Color('#e8341c')]
-const HIGHLIGHT: Color = Color('#fffbe0')
+## The same yellow as the Pac-Man sprite (entities/pacman/pacman.png).
+const LETTER_COLOR: Color = Color('#ffff00')
 const OUTLINE_COLOR: Color = Color('#160a33')
-const SHADOW_NEAR: Color = Color('#7b3fd6')
-const SHADOW_FAR: Color = Color('#3b1c7a')
 
 const GLYPHS: Dictionary = {
 	'P': ['1111110', '1100011', '1100011', '1111110', '1100000', '1100000', '1100000'],
@@ -33,8 +30,8 @@ func _initialize() -> void:
 	var rows: int = GLYPH_H * SCALE.y
 	var text_w: int = TEXT.length() * cols + (TEXT.length() - 1) * LETTER_GAP
 	var pad: int = OUTLINE
-	var w: int = text_w + 2 * pad + SHADOW_DEPTH
-	var h: int = rows + 2 * pad + SHADOW_DEPTH
+	var w: int = text_w + 2 * pad
+	var h: int = rows + 2 * pad
 
 	# letter mask in image coordinates
 	var mask: Dictionary = {}
@@ -57,20 +54,10 @@ func _initialize() -> void:
 
 	var img: Image = Image.create(w, h, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
-	# 3D shadow: the outlined letters repeated down-right, far layers first
-	for depth in range(SHADOW_DEPTH, 0, -1):
-		var color: Color = SHADOW_FAR.lerp(SHADOW_NEAR, 1.0 - float(depth - 1) / SHADOW_DEPTH)
-		for p: Vector2i in outlined:
-			put(img, p + Vector2i(depth, depth), color)
 	for p: Vector2i in outlined:
 		put(img, p, OUTLINE_COLOR)
-	# fill: horizontal gradient bands from top to bottom, highlight on top edges
 	for p: Vector2i in mask:
-		var t: float = float(p.y - pad) / rows
-		var color: Color = GRADIENT[mini(int(t * GRADIENT.size()), GRADIENT.size() - 1)]
-		if !mask.has(p + Vector2i.UP):
-			color = HIGHLIGHT
-		put(img, p, color)
+		put(img, p, LETTER_COLOR)
 
 	img.save_png(ProjectSettings.globalize_path(OUTPUT))
 	print('wrote %s (%dx%d)' % [OUTPUT, w, h])

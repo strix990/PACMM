@@ -113,11 +113,17 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 4
 
-[node name="texturerect_logo" type="TextureRect" parent="VBoxContainer/vboxcontainer_menu"]
+[node name="control_logo" type="Control" parent="VBoxContainer/vboxcontainer_menu"]
+custom_minimum_size = Vector2(200, 32)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="texturerect_logo" type="TextureRect" parent="VBoxContainer/vboxcontainer_menu/control_logo"]
+layout_mode = 0
+offset_top = -6.0
+offset_right = 200.0
+offset_bottom = 26.0
 texture = ExtResource("6_logo")
-stretch_mode = 3
 
 [node name="label_result" type="Label" parent="VBoxContainer/vboxcontainer_menu"]
 visible = false
