@@ -1,0 +1,81 @@
+# Builds the web version of the game and publishes it on GitHub Pages
+# (https://strix990.github.io/PACMM/) on every push to main.
+# GitHub setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+name: Deploy web build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# only one deployment at a time; a newer push replaces a waiting one
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  # must be exactly the Godot version the project is edited with (export templates must match)
+  GODOT_VERSION: 4.7.2
+  GODOT_STATUS: stable
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Godot
+        run: |
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64.zip"
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+          echo "GODOT=$RUNNER_TEMP/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64" >> "$GITHUB_ENV"
+
+      # the full templates package is ~1.3 GB; only the web templates are kept, and cached
+      - name: Cache web export templates
+        id: templates-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.${{ env.GODOT_STATUS }}
+          key: godot-web-templates-${{ env.GODOT_VERSION }}-${{ env.GODOT_STATUS }}
+
+      - name: Download web export templates
+        if: steps.templates-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_export_templates.tpz"
+          unzip -q templates.tpz 'templates/version.txt' 'templates/web_*' -d "$RUNNER_TEMP"
+          dest=~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}
+          mkdir -p "$dest"
+          mv "$RUNNER_TEMP"/templates/* "$dest"/
+          rm templates.tpz
+
+      # a fresh checkout has no .godot/ import cache; build it before exporting
+      - name: Import assets
+        run: '"$GODOT" --headless --path . --import'
+
+      - name: Export web build
+        run: |
+          mkdir -p build/web
+          "$GODOT" --headless --path . --export-release "Web" build/web/index.html
+          test -f build/web/index.pck
+          touch build/web/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

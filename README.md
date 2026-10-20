@@ -6,6 +6,29 @@ Based on [Pik-Pok](https://github.com/Alexander-Jordan/pik-pok-godot) by Alexand
 reskinned with the Pac-Man sprites and sounds from the first Godot Pac-Man tutorial
 (https://www.youtube.com/watch?v=CncJvOEM3OA).
 
+## Play online
+
+**https://strix990.github.io/PACMM/**
+
+Runs in the browser; the game is played with a keyboard.
+The site is rebuilt automatically by GitHub Actions (`.github/workflows/deploy-web.yml`) on every push to `main`.
+
+### Running the web build locally
+
+Export it with the Godot editor (Project -> Export -> Web) or from the terminal:
+
+    mkdir -p build/web && touch build/.gdignore
+    godot --headless --path . --export-release "Web" build/web/index.html
+
+then serve the folder and open http://localhost:8000:
+
+    cd build/web
+    python3 -m http.server 8000
+
+Opening `index.html` directly does not work: browsers don't let a page opened from a file load the
+game's `.wasm` and `.pck` files. (`build/` is git-ignored, and the `.gdignore` keeps Godot from
+importing the build into the project.)
+
 ## Game modes
 
 | Mode | Players | Controls |
