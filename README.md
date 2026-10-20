@@ -11,7 +11,7 @@ reskinned with the Pac-Man sprites and sounds from the first Godot Pac-Man tutor
 **https://strix990.github.io/PACMM/**
 
 Runs in the browser; the game is played with a keyboard.
-The site is rebuilt automatically by GitHub Actions (`.github/workflows/deploy-web.yml`) on every push to `main`.
+The site is rebuilt automatically by GitHub Actions (`.github/workflows/deploy-web.yml`) on every push to the `GameOnline` branch.
 
 ### Running the web build locally
 

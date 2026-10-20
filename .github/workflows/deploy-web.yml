@@ -1,11 +1,12 @@
 # Builds the web version of the game and publishes it on GitHub Pages
-# (https://strix990.github.io/PACMM/) on every push to main.
-# GitHub setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# (https://strix990.github.io/PACMM/) on every push to the GameOnline branch.
+# GitHub setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions", and
+# Settings -> Environments -> github-pages -> Deployment branches: allow GameOnline.
 name: Deploy web build
 
 on:
   push:
-    branches: [main]
+    branches: [GameOnline]
   workflow_dispatch: # lets you run it by hand from the Actions tab
 
 permissions:
