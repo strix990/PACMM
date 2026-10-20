@@ -18,7 +18,7 @@ var mode_index: int = 0:
 		
 		match mi:
 			0:
-				timer_mode.sto"res://utilities/ghost_manager/ghost_manager.gd"p()
+				timer_mode.stop()
 			1, 3:
 				var duration: float = 7.0 if GM.level < 5 else 5.0
 				set_mode_and_duration(GM.GhostMode.SCATTER, duration)

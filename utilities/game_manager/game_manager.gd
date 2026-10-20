@@ -5,8 +5,6 @@ const LIVES_MAX: int = 8
 const LIVES_START: int = 3
 ## Versus balance: Pac-Man starts with fewer lives against a human ghost.
 const VERSUS_LIVES_START: int = 2
-## Pellets (incl. power pellets) in a level; eating them all clears the level.
-const PELLETS_PER_LEVEL: int = 244
 ## Versus is a single maze played with this level's speeds, frightened time and ghost schedule.
 const VERSUS_LEVEL: int = 5
 
@@ -43,13 +41,17 @@ var winner: String = ''
 ## and the ghost player 2 controls in versus (node name in the main scene).
 var pacman_skins: Array[int] = [0, 0]
 var versus_ghost: String = 'RedGhost'
+## The map versus is played on (index into Maps.MAPS), chosen on the character select screen.
+var versus_map: int = 0
+## Pellets (incl. power pellets) in the current map, set by the MapLoader; eating them all clears the level.
+var pellets_total: int = 244
 
 var pellets_eaten: int = 0:
 	set(mc):
 		if pellets_eaten < 0 or mc == pellets_eaten:
 			return
 		pellets_eaten = mc
-		if mc == PELLETS_PER_LEVEL:
+		if mc == pellets_total:
 			if game_type == GameType.VERSUS:
 				winner = 'pacman'
 				mode = Mode.OVER

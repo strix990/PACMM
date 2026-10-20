@@ -3,7 +3,8 @@ class_name CharacterSelect extends Control
 ## Co-op: both players pick a Pac-Man skin (not the same one). Versus: player 1 picks a Pac-Man
 ## skin and player 2 picks which ghost to play.
 ## Keyboard: P1 A/D + Space, P2 left/right + Enter (Space/Enter again once both are ready starts
-## the game; moving un-readies). The mouse works too. Esc goes back.
+## the game; moving un-readies). In versus either player picks the map with W/S or up/down.
+## The mouse works too. Esc goes back.
 
 signal start_requested(game_type: GM.GameType)
 signal back_requested
@@ -32,6 +33,10 @@ var game_type: GM.GameType = GM.GameType.COOP
 var players: Array[Dictionary] = []
 var anim_time: float = 0.0
 var button_start: Button
+## Versus only: the chosen map (index into Maps.MAPS) and the nodes showing it.
+var map_index: int = 0
+var map_preview: TextureRect
+var map_name: Label
 
 func _ready() -> void:
 	hide()
@@ -59,6 +64,11 @@ func _process(delta: float) -> void:
 			move(p, 1)
 		if Input.is_action_just_pressed(prefix + 'item'):
 			press_select(p)
+		if game_type == GM.GameType.VERSUS:
+			if Input.is_action_just_pressed(prefix + 'up'):
+				change_map(-1)
+			elif Input.is_action_just_pressed(prefix + 'down'):
+				change_map(1)
 		update_preview(player)
 	if Input.is_action_just_pressed('ui_cancel'):
 		back_requested.emit()
@@ -100,8 +110,15 @@ func press_select(p: int) -> void:
 func can_start() -> bool:
 	return players.all(func(player: Dictionary) -> bool: return player['ready'])
 
+func change_map(step: int) -> void:
+	map_index = posmod(map_index + step, Maps.MAPS.size())
+	map_preview.texture = Maps.get_preview(map_index)
+	map_name.text = Maps.MAPS[map_index]['name']
+
 func start() -> void:
 	GM.pacman_skins[0] = players[0]['index']
+	if game_type == GM.GameType.VERSUS:
+		GM.versus_map = map_index
 	if players[1]['kind'] == 'ghost':
 		GM.versus_ghost = GHOSTS[players[1]['index']]['node']
 	else:
@@ -186,18 +203,42 @@ func build() -> void:
 	if game_type == GM.GameType.COOP and players[0]['index'] == players[1]['index']:
 		players[1]['index'] = (players[0]['index'] + 1) % PacmanSkins.SKINS.size()
 
+	# versus has a map row under the player panels, which pushes the buttons down
+	var versus: bool = game_type == GM.GameType.VERSUS
+	if versus:
+		build_map_row(192)
 	button_start = make_button('START', 16)
-	place(button_start, Vector2(72, 196), Vector2(80, 24))
+	place(button_start, Vector2(72, 228 if versus else 196), Vector2(80, 24))
 	button_start.pressed.connect(start)
 	var button_back: Button = make_button('BACK', 8)
-	place(button_back, Vector2(88, 226), Vector2(48, 15))
+	place(button_back, Vector2(88, 255 if versus else 226), Vector2(48, 15))
 	button_back.pressed.connect(func() -> void:
 		back_requested.emit()
 		hide())
 	var hint: Label = make_label('P1  A D  SPACE      P2  ARROWS  ENTER', 8)
 	hint.modulate = Color(1, 1, 1, 0.6)
-	place(hint, Vector2(0, 250), Vector2(224, 11))
+	place(hint, Vector2(0, 274 if versus else 250), Vector2(224, 11))
 	refresh()
+
+## MAP name | < | preview | > | key hint
+func build_map_row(y: float) -> void:
+	map_index = clampi(GM.versus_map, 0, Maps.MAPS.size() - 1)
+	map_name = make_label('', 8)
+	map_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	place(map_name, Vector2(4, y + 10), Vector2(70, 11))
+	var previous: Button = make_button('<', 8)
+	place(previous, Vector2(78, y + 8), Vector2(14, 15))
+	previous.pressed.connect(change_map.bind(-1))
+	map_preview = TextureRect.new()
+	place(map_preview, Vector2(98, y), Vector2(28, 31))
+	var next: Button = make_button('>', 8)
+	place(next, Vector2(132, y + 8), Vector2(14, 15))
+	next.pressed.connect(change_map.bind(1))
+	var keys: Label = make_label('W S / UP DOWN', 8)
+	keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	keys.modulate = Color(1, 1, 1, 0.6)
+	place(keys, Vector2(150, y + 10), Vector2(72, 11))
+	change_map(0)
 
 func build_column(p: int, kind: String, index: int, x: float) -> Dictionary:
 	var player: Dictionary = {'kind': kind, 'index': index, 'ready': false, 'options': [], 'preview_frames': []}

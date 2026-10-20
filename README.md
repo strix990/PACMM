@@ -39,6 +39,17 @@ importing the build into the project.)
 
 In versus, Pac-Man wins by eating every pellet and the ghost wins when Pac-Man runs out of lives.
 
+## Maps
+
+There are four mazes. In 1 PLAYER and CO-OP each level uses the next one (MAZE 1, 2, 3, 4, then back to 1);
+in VERSUS the players pick the map on the character select screen (W/S or up/down, or click the arrows).
+
+Each map is a text file in `stages/maps/` (listed in `stages/maps/maps.gd`): 31 lines of 28 characters,
+one per tile - `#` wall, `.` pellet, `o` power pellet, `-` ghost house door, space for empty floor.
+A corridor reaching the left/right edge becomes a tunnel automatically. The ghost house and Pac-Man's
+start must stay where they are. `stages/map_loader.gd` builds the level from the file. To add a map, add a
+file and an entry in `maps.gd` (the export presets already include `stages/maps/*.txt`).
+
 ## Character select
 
 **CO-OP** and **VERSUS** open a character select screen. In co-op both players pick a Pac-Man skin
@@ -80,6 +91,7 @@ Losing a life clears held items and active effects. The numbers are constants in
 | `entities/pellets` | Pellets (`Pellet`), power pellets (`PowerPellet`) and their spawner |
 | `entities/tunnel` | Side tunnels (ghosts slow down inside) |
 | `stages/main` | The level; `stages/maze_outline.gd` draws the maze |
+| `stages/maps` | The maze files and their list (`Maps`); `stages/map_loader.gd` builds a level from one |
 | `utilities/grid_2d` | Tile-by-tile movement shared by Pac-Man and the ghosts |
 | `utilities/ghost_manager` | Scatter/chase schedule and ghost sounds |
 | `utilities/game_manager` | Lives, levels, game mode (autoload `GM`) |

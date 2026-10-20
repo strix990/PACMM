@@ -65,6 +65,12 @@ func is_inside_maze(tile: Vector2i) -> bool:
 func is_in_house(tile: Vector2i) -> bool:
 	return house_rect.has_point(tile)
 
+## Forgets everything worked out from the walls (call after the map changes, see MapLoader).
+func reset_map_data() -> void:
+	_row_extents.clear()
+	_playable.clear()
+	bomb_tiles.clear()
+
 ## A tile the corridors can reach (Pac-Man's start); the playfield is everything reachable from it.
 @export var playable_seed: Vector2i = Vector2i(14, 26)
 

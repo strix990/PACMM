@@ -232,7 +232,7 @@ func get_next_house_target_point() -> Vector2:
 ## Item effects, the versus bonus for the player-controlled ghost and the half-pellets speed-up.
 func get_current_speed() -> float:
 	var multiplier: float = VERSUS_SPEED_MULTIPLIER if player_controlled else 1.0
-	if GM.pellets_eaten >= GM.PELLETS_PER_LEVEL / 2:
+	if GM.pellets_eaten >= GM.pellets_total / 2:
 		multiplier *= HALF_PELLETS_SPEED_MULTIPLIER
 	return super() * multiplier
 
